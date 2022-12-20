@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Compose Demo</string>
+    <string name="screen_lazy_list">Lazy List Demo</string>
+    <string name="screen_recycler_view">Recycler View</string>
 </resources>

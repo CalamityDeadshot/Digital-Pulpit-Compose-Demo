@@ -3,41 +3,34 @@ package ru.myitacademy.composedemo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import androidx.navigation.compose.rememberNavController
+import ru.myitacademy.composedemo.data.Record
+import ru.myitacademy.composedemo.ui.MainViewModel
+import ru.myitacademy.composedemo.ui.screens.lazy_list.LazyListScreen
+import ru.myitacademy.composedemo.ui.screens.navigation.AppNavigation
+import ru.myitacademy.composedemo.ui.screens.navigation.AppScreen
+import ru.myitacademy.composedemo.ui.screens.recycler_view.RecyclerViewScreen
 import ru.myitacademy.composedemo.ui.theme.ComposeDemoTheme
 
 class MainActivity : ComponentActivity() {
+
+    val mainViewModel: MainViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
 
-            val screens = listOf(
-                AppScreen(
-                    name = "First",
-                    icon = Icons.Default.Person
-                ),
-                AppScreen(
-                    name = "Second",
-                    icon = Icons.Default.Share
-                ),
-                AppScreen(
-                    name = "Third",
-                    icon = Icons.Default.ShoppingCart
-                )
-            )
-
-            var counter by remember { mutableStateOf(0) }
-            var isTextShown  by remember { mutableStateOf(true) }
+            val screens = AppScreen.getAll()
 
             val scaffoldState = rememberScaffoldState()
 
@@ -45,7 +38,7 @@ class MainActivity : ComponentActivity() {
                 mutableStateOf(screens.first())
             }
 
-            val scope = rememberCoroutineScope()
+            val navController = rememberNavController()
 
             ComposeDemoTheme {
 
@@ -54,7 +47,7 @@ class MainActivity : ComponentActivity() {
                     topBar = {
                         TopAppBar(
                             title = {
-                                Text(selectedScreen.name)
+                                Text(stringResource(selectedScreen.nameResource))
                             },
                             actions = {
                                 IconButton(onClick = {}) {
@@ -67,38 +60,25 @@ class MainActivity : ComponentActivity() {
                         )
                     },
                     content = {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize(),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
+                        Box(
+                            modifier = Modifier.padding(it)
                         ) {
-                            Button(
-                                onClick = {
-                                    counter++
-                                    isTextShown = !isTextShown
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = selectedScreen.icon,
-                                    contentDescription = null
-                                )
-                                Text(text = "Increment")
-                            }
-
-                            if (isTextShown) {
-                                repeat(10) {
-                                    Text(
-                                        text = counter.toString(),
-                                        fontSize = 36.sp
-                                    )
-                                }
-                            }
+                            AppNavigation(
+                                navHostController = navController,
+                                viewModel = mainViewModel
+                            )
                         }
                     },
                     floatingActionButton = {
                         FloatingActionButton(
-                            onClick = {}
+                            onClick = {
+                                mainViewModel.addRecord(
+                                    Record(
+                                        heading = "Whatever",
+                                        subtext = "Subtext"
+                                    )
+                                )
+                            }
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Add,
@@ -108,11 +88,12 @@ class MainActivity : ComponentActivity() {
                     },
                     bottomBar = {
                         BottomNavigation {
-                            screens.forEach { screen ->
+                            AppScreen.getAll().forEach { screen ->
                                 BottomNavigationItem(
                                     selected = selectedScreen == screen,
                                     onClick = {
                                         selectedScreen = screen
+                                        navController.navigate(screen.route)
                                     },
                                     icon = {
                                         Icon(
@@ -121,7 +102,7 @@ class MainActivity : ComponentActivity() {
                                         )
                                     },
                                     label = {
-                                        Text(text = screen.name)
+                                        Text(text = stringResource(screen.nameResource))
                                     },
                                     alwaysShowLabel = false
                                 )
@@ -133,8 +114,3 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
-data class AppScreen(
-    val name: String,
-    val icon: ImageVector
-)
