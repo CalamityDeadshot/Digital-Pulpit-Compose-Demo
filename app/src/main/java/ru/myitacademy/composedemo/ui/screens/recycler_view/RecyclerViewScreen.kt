@@ -1,5 +1,6 @@
 package ru.myitacademy.composedemo.ui.screens.recycler_view
 
+import android.util.Log
 import android.view.View
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,7 +33,7 @@ fun RecyclerViewScreen(
             }
         }
     ) {
-        adapter.dataSet = dataSet
+        it.adapter = adapter
         adapter.notifyDataSetChanged()
     }
 }
